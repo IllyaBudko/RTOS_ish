@@ -9,8 +9,11 @@ typedef struct{
   void * stk_alloc;
 }TaskTCB;
 
-typedef void (*OSTaskHandler)(void);
+void OS_Init(void);
 
+void OS_Schedule(void);
+
+typedef void (*OSTaskHandler)(void);
 void OSTask_Create(TaskTCB *me,OSTaskHandler Task, size_t stkSize);
 
 
