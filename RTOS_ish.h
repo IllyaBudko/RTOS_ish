@@ -6,6 +6,7 @@
 
 typedef struct{
   void * sp; // task stack pointer  
+  void * stk_alloc;
 }TaskTCB;
 
 typedef void (*OSTaskHandler)(void);
