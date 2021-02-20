@@ -1,25 +1,44 @@
 
-
+#include "main.h"
 #include "RTOS_ish.h"
 #include "stm32f4xx.h"
 
 
+#define systick_Pin GPIO_PIN_6
+#define systick_GPIO_Port GPIOB
+
+#define MAX_TASK_NUM    32 + 1
 
 TaskTCB * volatile OS_currentTask;  //Pointer to current task to execute
 TaskTCB * volatile OS_nextTask;     //Pointer to next task to execute
 
+TaskTCB * OS_Tasks[MAX_TASK_NUM];            //Task list
+uint8_t OS_TaskNum;                 //Number of tasks started
+uint8_t OS_CurrentIdx;              //Current task index
+
 void OS_Init(void)
 {
-  __disable_irq();
   *(uint32_t volatile *) 0xE000ED20U = 0xEEFF0000U; //Set PendSV priority as lowest and Systick just above it
-  HAL_SYSTICK_Config(SystemCoreClock/1000);
-  NVIC_EnableIRQ(SysTick_IRQn);
-  NVIC_EnableIRQ(PendSV_IRQn);
+}
+
+void OS_Run(void)
+{
+  __disable_irq();
+  OS_OnStartUp();
+  OS_Schedule();
   __enable_irq();
+  
+  //never will return after enable_irq
 }
 
 void OS_Schedule(void)
 {
+  ++OS_CurrentIdx;
+  if(OS_CurrentIdx == OS_TaskNum)
+  {
+    OS_CurrentIdx = 0U;
+  }
+  OS_nextTask = OS_Tasks[OS_CurrentIdx];
   if(OS_nextTask != OS_currentTask)
   {
     *(uint32_t volatile *)0xE000ED04 |= (1 << 28); // Set PendSV Pending
@@ -67,6 +86,16 @@ void OSTask_Create(TaskTCB *me,OSTaskHandler Task, size_t stkSize)
   {
     *temp_sp = 0xDEADBEEFU;
   }
+  if(OS_TaskNum < MAX_TASK_NUM)
+  {
+    OS_Tasks[OS_TaskNum] = me;
+    ++OS_TaskNum;
+  }
+  else
+  {
+    Error_Handler();
+  }
+    
 }
 
 __asm
@@ -118,12 +147,16 @@ PendSV_restore
 void SysTick_Handler(void)
 {
   __disable_irq();
+  HAL_GPIO_TogglePin(systick_GPIO_Port,systick_Pin);
+  HAL_GPIO_TogglePin(systick_GPIO_Port,systick_Pin);
   OS_Schedule();
   __enable_irq();
 }
 
-
-
+void Error_Handler(void)
+{
+  while(1);
+}
 
 
 
