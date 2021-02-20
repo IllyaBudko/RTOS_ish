@@ -12,13 +12,18 @@
 TaskTCB * volatile OS_currentTask;  //Pointer to current task to execute
 TaskTCB * volatile OS_nextTask;     //Pointer to next task to execute
 
-TaskTCB * OS_Tasks[MAX_TASK_NUM];            //Task list
+TaskTCB * OS_Tasks[MAX_TASK_NUM];   //Task list
 uint8_t OS_TaskNum;                 //Number of tasks started
 uint8_t OS_CurrentIdx;              //Current task index
+
+uint32_t OS_readySet;               //set of tasks ready to run
+uint32_t OS_delaySet;               //set of tasks delayed by OS_delay
 
 void OS_Init(void)
 {
   *(uint32_t volatile *) 0xE000ED20U = 0xEEFF0000U; //Set PendSV priority as lowest and Systick just above it
+  
+  OSTask_Create();
 }
 
 void OS_Run(void)
@@ -43,6 +48,15 @@ void OS_Schedule(void)
   {
     *(uint32_t volatile *)0xE000ED04 |= (1 << 28); // Set PendSV Pending
   }
+}
+
+void OS_Tick(void)
+{
+  
+}
+void OS_Delay(uint32_t ticks)
+{
+  
 }
 
 void OSTask_Create(TaskTCB *me,OSTaskHandler Task, size_t stkSize)
