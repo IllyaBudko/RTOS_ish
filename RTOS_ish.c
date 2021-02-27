@@ -167,50 +167,32 @@ void OSTask_Create(TaskTCB *me,OSTaskHandler Task,uint8_t me_priority, size_t st
     
 }
 
-__asm
 void PendSV_Handler(void)
 {
-
-    IMPORT  OS_currentTask  /* extern variable */
-    IMPORT  OS_nextTask  /* extern variable */
-
-    /* __disable_irq(); */
-    CPSID         I
-
-    /* if (OS_curr != (OSThread *)0) { */
-    LDR           r1,=OS_currentTask
-    LDR           r1,[r1,#0x00]
-    CBZ           r1,PendSV_restore
-
-    /*     push registers r4-r11 on the stack */
-    PUSH          {r4-r11}
-
-    /*     OS_curr->sp = sp; */
-    LDR           r1,=OS_currentTask
-    LDR           r1,[r1,#0x00]
-    STR           sp,[r1,#0x00]
-    /* } */
-
-PendSV_restore
-    /* sp = OS_next->sp; */
-    LDR           r1,=OS_nextTask
-    LDR           r1,[r1,#0x00]
-    LDR           sp,[r1,#0x00]
-
-    /* OS_curr = OS_next; */
-    LDR           r1,=OS_nextTask
-    LDR           r1,[r1,#0x00]
-    LDR           r2,=OS_currentTask
-    STR           r1,[r2,#0x00]
-
-    /* pop registers r4-r11 */
-    POP           {r4-r11}
-
-    /* __enable_irq(); */
-    CPSIE         I
-
-    /* return to the next thread */
-    BX            lr
+__asm(
+"    CPSID         I                         \n\t"
+"    LDR           r1,=OS_currentTask        \n\t"
+"    LDR           r1,[r1,#0x00]             \n\t"
+"    CBZ           r1,PendSV_restore         \n\t"
+"    PUSH          {r4-r11}                  \n\t"
+"    LDR           r1,=OS_currentTask        \n\t"
+"    LDR           r1,[r1,#0x00]             \n\t"
+"    STR           sp,[r1,#0x00]             \n\t"
+"PendSV_restore:                              \n\t"
+"    LDR           r1,=OS_nextTask           \n\t"
+"    LDR           r1,[r1,#0x00]             \n\t"
+"    LDR           sp,[r1,#0x00]             \n\t"
+"    LDR           r1,=OS_nextTask           \n\t"
+"    LDR           r1,[r1,#0x00]             \n\t"
+"    LDR           r2,=OS_currentTask        \n\t"
+"    STR           r1,[r2,#0x00]             \n\t"
+"    POP           {r4-r11}                  \n\t"
+"    CPSIE         I                         \n\t"
+"    BX            lr                        \n\t"
+  :
+  :
+  :"memory", "cc", "r1", "r2"
+    );
 }
 
 void SysTick_Handler(void)

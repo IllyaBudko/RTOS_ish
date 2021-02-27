@@ -11,6 +11,8 @@ typedef struct {
 }mutex_t;
 
 mutex_t * mutex_create(uint32_t init_state);
+
+
 uint32_t asm_set_mutex(mutex_t * mutex);
 uint32_t asm_reset_mutex(mutex_t * mutex);
 
