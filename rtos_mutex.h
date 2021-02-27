@@ -10,7 +10,7 @@ typedef struct {
   
 }mutex_t;
 
-mutex_t * mutex_create(uint32_t init_state);
+mutex_t * mutex_create(void);
 
 
 uint32_t asm_set_mutex(mutex_t * mutex);

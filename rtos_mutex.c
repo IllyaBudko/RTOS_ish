@@ -1,14 +1,15 @@
 #include "RTOS_ish.h"
 #include "rtos_mutex.h"
 
-mutex_t * mutex_create(uint32_t init_state)
+mutex_t * mutex_create(void)
 {
-  mutex_t * mutex_ptr;
-  mutex_ptr->mutex_ptr = (uint32_t *)malloc(sizeof(mutex_t));
+  mutex_t * p_mutex;
+  p_mutex = (mutex_t *)malloc(sizeof(mutex_t));
   
-  mutex_ptr->lock_token = init_state;
+  p_mutex->mutex_ptr = p_mutex;
+  p_mutex->lock_token = 0x00;
   
-  return mutex_ptr;
+  return p_mutex;
 }
 
 uint32_t asm_set_mutex(mutex_t * mutex)
