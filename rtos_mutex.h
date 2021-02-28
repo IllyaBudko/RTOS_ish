@@ -3,15 +3,21 @@
 
 #include "RTOS_ish.h"
 
-typedef struct {
-  
-  uint32_t lock_token;
-  void * mutex_ptr;
+typedef struct
+{
+  uint32_t lockToken;
   
 }mutex_t;
 
-mutex_t * mutex_create(void);
+typedef struct
+{
+  uint32_t availableList;
+  mutex_t * mutexFreeList[32];
 
+}mutex_controller_t;
+
+mutex_t * OS_mutex_create(void);
+void OS_mutexFreeList_create(void);
 
 uint32_t asm_set_mutex(mutex_t * mutex);
 uint32_t asm_reset_mutex(mutex_t * mutex);

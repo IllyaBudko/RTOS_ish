@@ -37,6 +37,8 @@ void OS_Init(size_t stkSize)
   
   //Start idle thread
   OSTask_Create(&MainIdleTask,IdleTask_func,0,stkSize);
+  
+  OS_mutexFreeList_create();
 }
 
 void OS_Run(void)
@@ -178,7 +180,7 @@ __asm(
 "    LDR           r1,=OS_currentTask        \n\t"
 "    LDR           r1,[r1,#0x00]             \n\t"
 "    STR           sp,[r1,#0x00]             \n\t"
-"PendSV_restore:                              \n\t"
+"PendSV_restore:                             \n\t"
 "    LDR           r1,=OS_nextTask           \n\t"
 "    LDR           r1,[r1,#0x00]             \n\t"
 "    LDR           sp,[r1,#0x00]             \n\t"

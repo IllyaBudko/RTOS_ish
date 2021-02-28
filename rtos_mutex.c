@@ -1,15 +1,43 @@
 #include "RTOS_ish.h"
 #include "rtos_mutex.h"
 
-mutex_t * mutex_create(void)
-{
-  mutex_t * p_mutex;
-  p_mutex = (mutex_t *)malloc(sizeof(mutex_t));
+mutex_controller_t * mutex_ctrl_ptr;
+
+mutex_t * OS_mutex_create(void)
+{ 
+  mutex_t * temp_ptr;
+  uint8_t availableIdx;
+  if((mutex_ctrl_ptr->availableList) == 0)
+  {
+    temp_ptr = mutex_ctrl_ptr->mutexFreeList[0];
+  }
+  else
+  {
+    __asm(
+      "EOR    r0, %[availableList], 0xFFFFFFFF \n\t"
+      "CLZ    %[availableIdx], r0              \n\t"
+      :[availableIdx] "=r" (availableIdx)
+      :[availableList] "r" (mutex_ctrl_ptr->availableList)
+      :"memory", "r0"
+    );
+    temp_ptr = mutex_ctrl_ptr->mutexFreeList[availableIdx];
+  }
   
-  p_mutex->mutex_ptr = p_mutex;
-  p_mutex->lock_token = 0x00;
+  mutex_t * p_mutex;
+  p_mutex = malloc(sizeof(mutex_t));
+  p_mutex->lockToken = 0x00;
   
   return p_mutex;
+}
+
+void OS_mutexFreeList_create(void)
+{
+  mutex_ctrl_ptr = (mutex_controller_t *)malloc(sizeof(mutex_controller_t));
+  for(uint32_t i = 0; i < 32; i++)
+  {
+    mutex_ctrl_ptr->mutexFreeList[i] = (mutex_t *)malloc(sizeof(mutex_t));
+  }
+  
 }
 
 uint32_t asm_set_mutex(mutex_t * mutex)
