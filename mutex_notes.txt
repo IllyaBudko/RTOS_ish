@@ -1,0 +1,18 @@
+
+
+2/28/2021
+
+-Mutex set needs a way to block current task when another task has the lock
+
+NOTE:
+    scheduling policy could use readySet and delayedSet for this, similar to the OS_Delay functionality
+    but have it not participate in the OS_Tick and just have it wait for the lock to become free
+    
+-Mutex set needs a way to schedule current task in when the lock owner has reset the mutex
+
+NOTE:
+    scheduling policy should schedule highest priority task based on tasks waiting for a mutex lock
+    and general task priority, that way it can schedule task priority waiting for lock before next general
+    task priority if its priority is bigger
+    
+I think these to points will help with not having unnecessary context switches when the task is waiting for the lock
