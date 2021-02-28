@@ -18,8 +18,8 @@ mutex_t * OS_mutex_create(void)
       :"memory", "r0"
     );
   temp_ptr = mutex_ctrl_ptr->mutexFreeList[availableIdx];
-  mutex_ctrl_ptr->availableList |= (1 << availableIdx);
-  temp_ptr->mutexFreeListIdx |= (1 << availableIdx);
+  mutex_ctrl_ptr->availableList |= ((1 << availableIdx));
+  temp_ptr->mutexFreeListIdx |= ((1 << availableIdx));
   }
   else
   {
