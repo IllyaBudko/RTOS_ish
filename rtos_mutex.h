@@ -23,7 +23,7 @@ mutex_t * OS_mutex_create(void);
 void OS_mutex_destroy(mutex_t ** mutex);
 
 
-uint32_t asm_set_mutex(mutex_t * mutex);
-uint32_t asm_reset_mutex(mutex_t * mutex);
+uint32_t OS_set_mutex(mutex_t * mutex);
+uint32_t OS_reset_mutex(mutex_t * mutex);
 
 #endif /*_RTOS_MUTEX_H_*/

@@ -36,7 +36,7 @@ void OS_Init(size_t stkSize)
   *(uint32_t volatile *) 0xE000ED20U = 0xEEFF0000U;
   
   //Start idle thread
-  OSTask_Create(&MainIdleTask,IdleTask_func,0,stkSize);
+  OS_Task_Create(&MainIdleTask,IdleTask_func,0,stkSize);
   
   OS_mutexFreeList_create();
 }
@@ -107,7 +107,7 @@ void OS_Delay(uint32_t ticks)
   __enable_irq();
 }
 
-void OSTask_Create(TaskTCB *me,OSTaskHandler Task,uint8_t me_priority, size_t stkSize)
+void OS_Task_Create(TaskTCB *me,OSTaskHandler Task,uint8_t me_priority, size_t stkSize)
 {
   uint32_t * temp_sp;
   uint32_t * temp_stack_limit;

@@ -25,7 +25,7 @@ void OS_Tick(void);
 void OS_Delay(uint32_t ticks);
 
 typedef void (*OSTaskHandler)(void);
-void OSTask_Create(TaskTCB *me,OSTaskHandler Task,uint8_t me_priority, size_t stkSize);
+void OS_Task_Create(TaskTCB *me,OSTaskHandler Task,uint8_t me_priority, size_t stkSize);
 
 
 void Error_Handler(void);

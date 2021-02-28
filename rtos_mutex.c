@@ -48,7 +48,7 @@ void OS_mutexFreeList_create(void)
   
 }
 
-uint32_t asm_set_mutex(mutex_t * mutex)
+uint32_t OS_set_mutex(mutex_t * mutex)
 {
   uint32_t set_success = 0x01;
   if((void *)mutex != NULL)
@@ -68,7 +68,7 @@ uint32_t asm_set_mutex(mutex_t * mutex)
   return set_success == 0;
 }
 
-uint32_t asm_reset_mutex(mutex_t * mutex)
+uint32_t OS_reset_mutex(mutex_t * mutex)
 {
   uint32_t set_success = 0x01;
   if((void *)mutex != NULL)
