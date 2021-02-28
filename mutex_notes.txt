@@ -15,4 +15,4 @@ NOTE:
     and general task priority, that way it can schedule task priority waiting for lock before next general
     task priority if its priority is bigger
     
-I think these to points will help with not having unnecessary context switches when the task is waiting for the lock
+I think these two points will help with not having unnecessary context switches when the task is waiting for the lock
