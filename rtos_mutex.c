@@ -22,12 +22,7 @@ mutex_t * OS_mutex_create(void)
     );
     temp_ptr = mutex_ctrl_ptr->mutexFreeList[availableIdx];
   }
-  
-  mutex_t * p_mutex;
-  p_mutex = malloc(sizeof(mutex_t));
-  p_mutex->lockToken = 0x00;
-  
-  return p_mutex;
+  return temp_ptr;
 }
 
 void OS_mutexFreeList_create(void)
