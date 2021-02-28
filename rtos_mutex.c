@@ -7,11 +7,8 @@ mutex_t * OS_mutex_create(void)
 { 
   mutex_t * temp_ptr;
   uint8_t availableIdx;
-  if((mutex_ctrl_ptr->availableList) == 0)
-  {
-    temp_ptr = mutex_ctrl_ptr->mutexFreeList[0];
-  }
-  else
+  
+  if(mutex_ctrl_ptr->availableList != 0xFFFFFFFFU)
   {
     __asm(
       "EOR    r0, %[availableList], 0xFFFFFFFF \n\t"
@@ -20,9 +17,25 @@ mutex_t * OS_mutex_create(void)
       :[availableList] "r" (mutex_ctrl_ptr->availableList)
       :"memory", "r0"
     );
-    temp_ptr = mutex_ctrl_ptr->mutexFreeList[availableIdx];
+  temp_ptr = mutex_ctrl_ptr->mutexFreeList[availableIdx];
+  mutex_ctrl_ptr->availableList |= (1 << availableIdx);
+  temp_ptr->mutexFreeListIdx |= (1 << availableIdx);
   }
+  else
+  {
+    temp_ptr = (mutex_t *)0;
+    return temp_ptr;
+  }
+  
   return temp_ptr;
+}
+
+void OS_mutex_destroy(mutex_t ** mutex)
+{
+  mutex_t *temp_ptr = *mutex;
+  mutex_ctrl_ptr->availableList &= ~(1 << ((temp_ptr->mutexFreeListIdx) - 1U));
+  (temp_ptr->mutexFreeListIdx) = 0x00000000U;
+  *mutex = NULL;
 }
 
 void OS_mutexFreeList_create(void)
@@ -38,35 +51,39 @@ void OS_mutexFreeList_create(void)
 uint32_t asm_set_mutex(mutex_t * mutex)
 {
   uint32_t set_success = 0x01;
-  __asm(
-  
-  "MOV      r0            , #0x01  \n\t"
-  "LDREX    %[set_success], [%[mutex]]  \n\t"
-  "CMP      %[set_success], #0x00 \n\t"
-  "ITT      EQ  \n\t"
-  "STREXEQ  %[set_success], r0, [%[mutex]]  \n\t"
-  "DMBEQ  \n\t"
-  :[set_success] "=r" (set_success), [mutex] "+r" (mutex)
-  :
-  :"memory", "r0"
-  );
+  if((void *)mutex != NULL)
+  {
+    __asm(
+    "MOV      r0            , #0x01  \n\t"
+    "LDREX    %[set_success], [%[mutex]]  \n\t"
+    "CMP      %[set_success], #0x00 \n\t"
+    "ITT      EQ  \n\t"
+    "STREXEQ  %[set_success], r0, [%[mutex]]  \n\t"
+    "DMBEQ  \n\t"
+    :[set_success] "=r" (set_success), [mutex] "+r" (mutex)
+    :
+    :"memory", "r0"
+    );
+  }
   return set_success == 0;
 }
 
 uint32_t asm_reset_mutex(mutex_t * mutex)
 {
   uint32_t set_success = 0x01;
-  __asm(
-  
-  "MOV      r0            , #0x00  \n\t"
-  "LDREX    %[set_success], [%[mutex]]  \n\t"
-  "CMP      %[set_success], #0x01 \n\t"
-  "ITT      EQ  \n\t"
-  "STREXEQ  %[set_success], r0, [%[mutex]]  \n\t"
-  "DMBEQ  \n\t"
-  :[set_success] "=r" (set_success), [mutex] "+r" (mutex)
-  :
-  :"memory", "r0"
-  );
+  if((void *)mutex != NULL)
+  {
+    __asm(
+    "MOV      r0            , #0x00  \n\t"
+    "LDREX    %[set_success], [%[mutex]]  \n\t"
+    "CMP      %[set_success], #0x01 \n\t"
+    "ITT      EQ  \n\t"
+    "STREXEQ  %[set_success], r0, [%[mutex]]  \n\t"
+    "DMBEQ  \n\t"
+    :[set_success] "=r" (set_success), [mutex] "+r" (mutex)
+    :
+    :"memory", "r0"
+    );
+  }
   return set_success == 0;
 }

@@ -6,6 +6,7 @@
 typedef struct
 {
   uint32_t lockToken;
+  uint32_t mutexFreeListIdx;
   
 }mutex_t;
 
@@ -16,8 +17,11 @@ typedef struct
 
 }mutex_controller_t;
 
-mutex_t * OS_mutex_create(void);
 void OS_mutexFreeList_create(void);
+
+mutex_t * OS_mutex_create(void);
+void OS_mutex_destroy(mutex_t ** mutex);
+
 
 uint32_t asm_set_mutex(mutex_t * mutex);
 uint32_t asm_reset_mutex(mutex_t * mutex);
