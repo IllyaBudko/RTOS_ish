@@ -15,4 +15,6 @@ NOTE:
     and general task priority, that way it can schedule task priority waiting for lock before next general
     task priority if its priority is bigger
     
-I think these two points will help with not having unnecessary context switches when the task is waiting for the lock
+I think these two points will help with not having unnecessary context switches when the task is waiting for the lock.
+Maybe add a delayed set to the mutex controller and have it look into which task would need to be scheduled or add
+a delayed set to each mutex and have it interface with scheduler
