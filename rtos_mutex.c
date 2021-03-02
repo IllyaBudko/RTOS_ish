@@ -10,7 +10,7 @@ mutex_t * OS_mutex_create(void)
   
   if(mutex_ctrl_ptr->availableList != 0xFFFFFFFFU)
   {
-    __asm(
+    __asm volatile(
       "EOR    r0, %[availableList], 0xFFFFFFFF \n\t"
       "CLZ    %[availableIdx], r0              \n\t"
       :[availableIdx] "=r" (availableIdx)
