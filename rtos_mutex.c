@@ -8,18 +8,19 @@ mutex_t * OS_mutex_create(void)
   mutex_t * temp_ptr;
   uint8_t availableIdx;
   
-  if(mutex_ctrl_ptr->availableList != 0xFFFFFFFFU)
+  if(mutex_ctrl_ptr->availableList != 0x00000000U)
   {
     __asm volatile(
-      "EOR    r0, %[availableList], 0xFFFFFFFF \n\t"
-      "CLZ    %[availableIdx], r0              \n\t"
+      "MOV    r0, #0xFFFFFFFEU  \n\t"
+      "EOR    r1, %[availableList], r0 \n\t"
+      "CLZ    %[availableIdx], r1              \n\t"
       :[availableIdx] "=r" (availableIdx)
       :[availableList] "r" (mutex_ctrl_ptr->availableList)
-      :"memory", "r0"
+      :"memory", "r0", "r1"
     );
   temp_ptr = mutex_ctrl_ptr->mutexFreeList[availableIdx];
-  mutex_ctrl_ptr->availableList |= ((1 << availableIdx));
-  temp_ptr->mutexFreeListIdx |= ((1 << availableIdx));
+  mutex_ctrl_ptr->availableList &= ~((1 << (31 - availableIdx)));
+  temp_ptr->mutexFreeListIdx |= ((1 << (31 - availableIdx)));
   }
   else
   {
@@ -41,7 +42,8 @@ void OS_mutex_destroy(mutex_t ** mutex)
 void OS_mutexFreeList_create(void)
 {
   mutex_ctrl_ptr = (mutex_controller_t *)malloc(sizeof(mutex_controller_t));
-  for(uint32_t i = 0; i < 32; i++)
+  mutex_ctrl_ptr->availableList = 0xFFFFFFFFU;
+  for(uint32_t i = 0; i < 31; i++)
   {
     mutex_ctrl_ptr->mutexFreeList[i] = (mutex_t *)malloc(sizeof(mutex_t));
   }
