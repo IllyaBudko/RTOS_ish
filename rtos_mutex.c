@@ -17,11 +17,11 @@ mutex_t * OS_mutex_create(void)
       :[availableIdx] "=r" (availableIdx)
       :[availableList] "r" (mutex_ctrl_ptr->availableList)
       :"memory", "r0", "r1"
-    );
+    );  
   availableIdx -= 1;
+  mutex_ctrl_ptr->availableList &= ~(1 << (31 - availableIdx));
   temp_ptr = mutex_ctrl_ptr->mutexFreeList[31 - availableIdx];
-  mutex_ctrl_ptr->availableList &= ~((1 << (31 - availableIdx)));
-  temp_ptr->mutexFreeListIdx |= ((1 << (31 - availableIdx)));
+  temp_ptr->mutexFreeListIdx = (1 << (31 - availableIdx));
   }
   else
   {
