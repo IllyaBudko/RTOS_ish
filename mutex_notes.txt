@@ -18,3 +18,11 @@ NOTE:
 I think these two points will help with not having unnecessary context switches when the task is waiting for the lock.
 Maybe add a delayed set to the mutex controller and have it look into which task would need to be scheduled or add
 a delayed set to each mutex and have it interface with scheduler
+
+03/03/2021
+
+NOTE:
+    Finally fixed the issue where the availableIdx wasnt generating, also tested OS_mutex_destroy,
+    seems to be working availableIdx generates properly
+    
+    
