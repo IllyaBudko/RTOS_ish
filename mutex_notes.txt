@@ -25,5 +25,4 @@ NOTE:
     Finally fixed the issue where the availableIdx wasnt generating, also tested OS_mutex_destroy,
     seems to be working availableIdx generates properly
     
-07/03/2021
-
+    

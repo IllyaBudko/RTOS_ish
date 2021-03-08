@@ -96,11 +96,11 @@ void OS_blocking_mutex_lock(mutex_t * mutex)
   else
   {
     __disable_irq();
-    OS_readySet &= ~(1 << ((OS_currentTask->priority) + 1U));
-    OS_delaySet |= (1 << ((OS_currentTask->priority) + 1U));
-    mutex->mutexWaitingList |= (1 << ((OS_currentTask->priority) + 1U));
+    OS_readySet &= ~(1 << (OS_currentTask->priority - 1U));
+    OS_delaySet |= (1 << (OS_currentTask->priority - 1U));
+    mutex->mutexWaitingList |= (1 << (OS_currentTask->priority - 1U));
+   OS_Schedule();
     __enable_irq();
-    OS_Schedule();
   }
 }
 
@@ -110,11 +110,11 @@ void OS_blocking_mutex_unlock(mutex_t * mutex)
   isUnlockSuccessful = asm_reset_mutex(mutex);
   if(isUnlockSuccessful)
   {
-    uint8_t tmp = (32 - __clz(mutex->mutexFreeListIdx));
     __disable_irq();
+    uint8_t tmp = (32 - __clz(mutex->mutexWaitingList));
     OS_readySet |=  (1 << tmp);
     OS_delaySet &= ~(1 << tmp);
-    mutex->mutexWaitingList &= ~(1 << ((OS_currentTask->priority) + 1U));
+    mutex->mutexWaitingList &= ~(1 << (OS_currentTask->priority - 1U));
     __enable_irq();
   }
 }
