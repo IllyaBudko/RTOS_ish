@@ -1,7 +1,24 @@
-#include "RTOS_ish.h"
 #include "rtos_mutex.h"
+#include "RTOS_ish.h"
+#include "stm32f4xx.h"
+
+extern TaskTCB * volatile OS_currentTask;  //Pointer to current task to execute
+extern TaskTCB * volatile OS_nextTask;     //Pointer to next task to execute
+
+extern uint32_t OS_readySet;               //bitmask of tasks ready to run
+extern uint32_t OS_delaySet;               //bitmask of tasks delayed by OS_delay
 
 mutex_controller_t * mutex_ctrl_ptr;
+
+void OS_mutexFreeList_create(void)
+{
+  mutex_ctrl_ptr = (mutex_controller_t *)malloc(sizeof(mutex_controller_t));
+  mutex_ctrl_ptr->availableList = 0xFFFFFFFFU;
+  for(uint32_t i = 0; i < 32; i++)
+  {
+    mutex_ctrl_ptr->mutexFreeList[i] = (mutex_t *)malloc(sizeof(mutex_t));
+  }
+}
 
 mutex_t * OS_mutex_create(void)
 { 
@@ -41,19 +58,68 @@ void OS_mutex_destroy(mutex_t ** mutex)
   (temp_ptr->mutexFreeListIdx) = 0x00000000U;
   *mutex = NULL;
 }
-
-void OS_mutexFreeList_create(void)
+/*non-blocking mutex apis*/
+uint8_t OS_nonblocking_mutex_lock(mutex_t * mutex)
 {
-  mutex_ctrl_ptr = (mutex_controller_t *)malloc(sizeof(mutex_controller_t));
-  mutex_ctrl_ptr->availableList = 0xFFFFFFFFU;
-  for(uint32_t i = 0; i < 32; i++)
+  uint8_t isLockSuccessful;
+  isLockSuccessful = asm_set_mutex(mutex);
+  if(isLockSuccessful)
   {
-    mutex_ctrl_ptr->mutexFreeList[i] = (mutex_t *)malloc(sizeof(mutex_t));
+    __disable_irq();
+    mutex->lockID = OS_currentTask->priority;
+    __enable_irq();
   }
-  
+  return isLockSuccessful;
 }
 
-uint32_t OS_set_mutex(mutex_t * mutex)
+uint8_t OS_nonblocking_mutex_unlock(mutex_t * mutex)
+{
+  uint8_t isUnlockSuccssful;
+  isUnlockSuccssful = asm_reset_mutex(mutex);
+  if(isUnlockSuccssful)
+  {
+    __disable_irq();
+    mutex->lockID = 0x00U;
+    __enable_irq();
+  }
+  return isUnlockSuccssful;
+}
+
+/*blocking mutex apis*/
+void OS_blocking_mutex_lock(mutex_t * mutex)
+{
+  uint8_t isLockSuccessful;
+  if(mutex->lockID == 0x00U)
+  {
+    isLockSuccessful = asm_set_mutex(mutex);
+  }
+  else
+  {
+    __disable_irq();
+    OS_readySet &= ~(1 << ((OS_currentTask->priority) + 1U));
+    OS_delaySet |= (1 << ((OS_currentTask->priority) + 1U));
+    mutex->mutexWaitingList |= (1 << ((OS_currentTask->priority) + 1U));
+    __enable_irq();
+    OS_Schedule();
+  }
+}
+
+void OS_blocking_mutex_unlock(mutex_t * mutex)
+{
+  uint8_t isUnlockSuccessful;
+  isUnlockSuccessful = asm_reset_mutex(mutex);
+  if(isUnlockSuccessful)
+  {
+    uint8_t tmp = (32 - __clz(mutex->mutexFreeListIdx));
+    __disable_irq();
+    OS_readySet |=  (1 << tmp);
+    OS_delaySet &= ~(1 << tmp);
+    mutex->mutexWaitingList &= ~(1 << ((OS_currentTask->priority) + 1U));
+    __enable_irq();
+  }
+}
+
+uint32_t asm_set_mutex(mutex_t * mutex)
 {
   uint32_t set_success = 0x01;
   if((void *)mutex != NULL)
@@ -73,7 +139,7 @@ uint32_t OS_set_mutex(mutex_t * mutex)
   return set_success == 0;
 }
 
-uint32_t OS_reset_mutex(mutex_t * mutex)
+uint32_t asm_reset_mutex(mutex_t * mutex)
 {
   uint32_t set_success = 0x01;
   if((void *)mutex != NULL)
