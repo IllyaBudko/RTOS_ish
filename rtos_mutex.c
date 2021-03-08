@@ -115,7 +115,8 @@ void OS_blocking_mutex_unlock(mutex_t * mutex)
   if(isUnlockSuccessful)
   {
     __disable_irq();
-    OS_readySet |= (1 << (LOG2(mutex->WaitingList)));
+    OS_readySet |=  (1 << (LOG2(mutex->WaitingList)));
+    OS_delaySet &= ~(1 << (LOG2(mutex->WaitingList)));
     OS_currentTask->workingPriority = OS_currentTask->setPriority;
     __enable_irq();
   }
