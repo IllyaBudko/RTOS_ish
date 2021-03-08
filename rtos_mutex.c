@@ -63,12 +63,12 @@ uint8_t OS_nonblocking_mutex_lock(mutex_t * mutex)
 {
   uint8_t isLockSuccessful;
   isLockSuccessful = asm_set_mutex(mutex);
+  __disable_irq();
   if(isLockSuccessful)
   {
-    __disable_irq();
-    mutex->lockID = OS_currentTask->priority;
-    __enable_irq();
+    mutex->mutexOwnerTask = OS_currentTask;
   }
+  __enable_irq();
   return isLockSuccessful;
 }
 
@@ -76,12 +76,12 @@ uint8_t OS_nonblocking_mutex_unlock(mutex_t * mutex)
 {
   uint8_t isUnlockSuccssful;
   isUnlockSuccssful = asm_reset_mutex(mutex);
+  __disable_irq();
   if(isUnlockSuccssful)
   {
-    __disable_irq();
-    mutex->lockID = 0x00U;
-    __enable_irq();
+    mutex->mutexOwnerTask = (void *)0x00U;
   }
+  __enable_irq();
   return isUnlockSuccssful;
 }
 
@@ -89,9 +89,11 @@ uint8_t OS_nonblocking_mutex_unlock(mutex_t * mutex)
 void OS_blocking_mutex_lock(mutex_t * mutex)
 {
   uint8_t isLockSuccessful;
-  if(mutex->lockID == 0x00U)
+  if(mutex->mutexOwnerTask == (void *)0x00U)
   {
     isLockSuccessful = asm_set_mutex(mutex);
+    (void)isLockSuccessful;
+    
   }
   else
   {

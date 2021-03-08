@@ -4,8 +4,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "rtos_mutex.h"
-
 
 
 typedef struct{
@@ -29,4 +27,5 @@ void OS_Task_Create(TaskTCB *me,OSTaskHandler Task,uint8_t me_priority, size_t s
 
 
 void Error_Handler(void);
+#include "rtos_mutex.h"
 #endif /*_RTOS_ISH_H_*/

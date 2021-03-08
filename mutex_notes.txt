@@ -25,4 +25,11 @@ NOTE:
     Finally fixed the issue where the availableIdx wasnt generating, also tested OS_mutex_destroy,
     seems to be working availableIdx generates properly
     
+07/03/2021
+
+NOTE:
+    Mutex waiting queue ideas
     
+    -Associate priority to every one in queue higher than current mutex then revert back to own priority
+    -Do atomic lock/unlock as soon as possible in lock/unlock(blocking) OS functions then use current mutex owner tcb
+     to massage the scheduling process and next in mutex queue

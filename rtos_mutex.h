@@ -5,10 +5,10 @@
 
 typedef struct
 {
-  uint32_t lockToken;
-  uint32_t mutexFreeListIdx;
-  uint32_t mutexWaitingList;
-  uint8_t  lockID;            //Since task priority is unique, we can use it as task id for lock ids
+  uint32_t  lockToken;
+  uint32_t  mutexFreeListIdx;
+  uint32_t  mutexWaitingList;
+  TaskTCB * mutexOwnerTask;
   
 }mutex_t;
 
