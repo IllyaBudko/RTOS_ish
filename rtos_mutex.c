@@ -97,7 +97,10 @@ void OS_blocking_mutex_lock(mutex_t * mutex)
     __disable_irq();
     mutex->WaitingList |= (1 << (OS_currentTask->workingPriority - 1U));
     OS_readySet &= ~(1 << (OS_currentTask->workingPriority - 1U));
-    OS_currentTask->workingPriority = ((mutex->OwnerTask->workingPriority) + 1U);
+    if(OS_currentTask->workingPriority <= mutex->OwnerTask->workingPriority)
+    {
+      OS_currentTask->workingPriority = ((mutex->OwnerTask->workingPriority) + 1U);
+    }
     OS_delaySet |=  (1 << (OS_currentTask->workingPriority - 1U));
     OS_Schedule();
     __enable_irq();
