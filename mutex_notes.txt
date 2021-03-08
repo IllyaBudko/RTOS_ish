@@ -34,3 +34,5 @@ NOTE:
     -Do atomic lock/unlock as soon as possible in lock/unlock(blocking) OS functions then use current mutex owner tcb
      to massage the scheduling process and next in mutex queue
     -Use the highest prority for the waiting queue
+    
+    Maybe separate scheduling and os system tick, use svcall for scheduling and systick for os system tick
