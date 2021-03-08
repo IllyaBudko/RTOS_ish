@@ -92,9 +92,9 @@ void OS_blocking_mutex_lock(mutex_t * mutex)
 {
   uint8_t isLockSuccessful;
   isLockSuccessful = asm_set_mutex(mutex);
+  __disable_irq();
   if(isLockSuccessful == 0)
   {
-    __disable_irq();
     mutex->WaitingList |= (1 << (OS_currentTask->workingPriority - 1U));
     OS_readySet &= ~(1 << (OS_currentTask->workingPriority - 1U));
     if(OS_currentTask->workingPriority <= mutex->OwnerTask->workingPriority)
@@ -103,8 +103,8 @@ void OS_blocking_mutex_lock(mutex_t * mutex)
     }
     OS_delaySet |=  (1 << (OS_currentTask->workingPriority - 1U));
     OS_Schedule();
-    __enable_irq();
   }
+  __enable_irq();
 }
  
 //doesnt work, dont use
@@ -115,7 +115,7 @@ void OS_blocking_mutex_unlock(mutex_t * mutex)
   if(isUnlockSuccessful)
   {
     __disable_irq();
-    OS_readySet |= (1 << (mutex->WaitingList - 1U));
+    OS_readySet |= (1 << (LOG2(mutex->WaitingList)));
     OS_currentTask->workingPriority = OS_currentTask->setPriority;
     __enable_irq();
   }
