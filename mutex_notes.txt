@@ -30,6 +30,6 @@ NOTE:
 NOTE:
     Mutex waiting queue ideas
     
-    -Associate priority to every one in queue higher than current mutex then revert back to own priority
+    -Associate priority to every one in queue higher than current mutex then revert back to own priority (priority ceiling-like)
     -Do atomic lock/unlock as soon as possible in lock/unlock(blocking) OS functions then use current mutex owner tcb
      to massage the scheduling process and next in mutex queue

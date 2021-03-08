@@ -10,7 +10,8 @@ typedef struct{
   void * sp; // task stack pointer  
   void * stk_alloc; // bottom of stack pointer
   uint32_t timeout; // timeout for blocking delay
-  uint8_t priority; // task priority
+  uint8_t workingPriority; // task priority
+  uint8_t setPriority;
 }TaskTCB;
 
 

@@ -81,7 +81,7 @@ void OS_Tick(void)
     
     Q_ASSERT((t != (TaskTCB *)0) && (t->timeout != 0U));
     
-    bit = (1 << (t->priority - 1U));
+    bit = (1 << (t->setPriority - 1U));
     --t->timeout;
     if(t->timeout == 0U)
     {
@@ -99,7 +99,7 @@ void OS_Delay(uint32_t ticks)
   if(OS_currentTask != OS_Tasks[0])
   {
     OS_currentTask->timeout = ticks;
-    bit = (1 << (OS_currentTask->priority - 1U));
+    bit = (1 << (OS_currentTask->setPriority - 1U));
     OS_readySet &= ~bit;
     OS_delaySet |=  bit;
     OS_Schedule();
@@ -156,10 +156,11 @@ void OS_Task_Create(TaskTCB *me,OSTaskHandler Task,uint8_t me_priority, size_t s
   if((me_priority < 32) && (OS_Tasks[me_priority] == (TaskTCB *)0))
   {
     OS_Tasks[me_priority] = me;
-    me->priority = me_priority;
+    me->setPriority = me_priority;
+    me->workingPriority = me_priority;
     if(me_priority > 0U)
     {
-      OS_readySet |= (1U << (me_priority - 1U));
+      OS_readySet |= (1U << ((me->setPriority) - 1U));
     }
   }
   else

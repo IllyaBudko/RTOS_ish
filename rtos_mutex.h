@@ -6,9 +6,9 @@
 typedef struct
 {
   uint32_t  lockToken;
-  uint32_t  mutexFreeListIdx;
-  uint32_t  mutexWaitingList;
-  TaskTCB * mutexOwnerTask;
+  uint32_t  FreeListIdx;
+  uint32_t  WaitingList;
+  TaskTCB * OwnerTask;
   
 }mutex_t;
 
