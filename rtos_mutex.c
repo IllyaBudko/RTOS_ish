@@ -85,7 +85,7 @@ uint8_t OS_nonblocking_mutex_unlock(mutex_t * mutex)
   return isUnlockSuccssful;
 }
 
-/*blocking mutex apis*/
+//doesnt work, dont use
 void OS_blocking_mutex_lock(mutex_t * mutex)
 {
   uint8_t isLockSuccessful;
@@ -95,6 +95,7 @@ void OS_blocking_mutex_lock(mutex_t * mutex)
   }
   else
   {
+    //here is iffy
     __disable_irq();
     OS_readySet &= ~(1 << (OS_currentTask->priority - 1U));
     OS_delaySet |= (1 << (OS_currentTask->priority - 1U));
@@ -103,13 +104,15 @@ void OS_blocking_mutex_lock(mutex_t * mutex)
     __enable_irq();
   }
 }
-
+ 
+//doesnt work, dont use
 void OS_blocking_mutex_unlock(mutex_t * mutex)
 {
   uint8_t isUnlockSuccessful;
   isUnlockSuccessful = asm_reset_mutex(mutex);
   if(isUnlockSuccessful)
   {
+    //here is iffy
     __disable_irq();
     uint8_t tmp = (32 - __clz(mutex->mutexWaitingList));
     OS_readySet |=  (1 << tmp);
